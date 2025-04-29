@@ -25,10 +25,10 @@ fn main() -> ! {
     let ms = POLL_INTERVAL.as_millis();
     defmt::println!("Polling button every {}ms", ms);
 
-    // let mut button = board.buttons._1;
+    let mut button = board.buttons._1;
     loop {
-        // let is_pressed = button.is_pressed();
-        let is_pressed = true; //button.is_pressed();
+        let is_pressed = button.is_pressed();
+        // let is_pressed = true; //button.is_pressed();
 
         if is_pressed {
 

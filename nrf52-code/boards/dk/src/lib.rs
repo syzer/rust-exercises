@@ -14,7 +14,7 @@ use core::{
 
 use cortex_m::peripheral::NVIC;
 use cortex_m_semihosting::debug;
-use embedded_hal::digital::{OutputPin, StatefulOutputPin};
+use embedded_hal::digital::{InputPin, OutputPin, StatefulOutputPin};
 #[cfg(feature = "advanced")]
 use grounded::uninit::GroundedArrayCell;
 #[cfg(any(feature = "radio", feature = "usbd"))]
@@ -24,7 +24,7 @@ pub use hal::ieee802154;
 pub use hal::pac::{interrupt, Interrupt, NVIC_PRIO_BITS, RTC0};
 use hal::{
     clocks::{self, Clocks},
-    gpio::{p0, Level, Output, Pin, Port, PushPull},
+    gpio::{p0, Input, Level, Output, Pin, Port, PullUp, PushPull},
     rtc::{Rtc, RtcInterrupt},
     timer::OneShot,
 };
@@ -56,6 +56,8 @@ pub struct Board {
     pub leds: Leds,
     /// Timer
     pub timer: Timer,
+    /// Buttons
+    pub buttons: Buttons,
 
     /// Radio interface
     #[cfg(feature = "radio")]
@@ -184,6 +186,32 @@ impl Timer {
 
         defmt::trace!("... DONE");
     }
+}
+
+/// All Buttons on the board
+pub struct Buttons {
+    /// LED1: pin P0.11, green LED
+    pub _1: Button,
+    /// LED1: pin P0.12, green LED
+     pub _2: Button,
+    /// LED1: pin P0.24, green LED
+    pub _3: Button,
+     /// LED1: pin P0.25, green LED
+     pub _4: Button,
+}
+
+/// A single button
+pub struct Button {
+    inner: Pin<Input<PullUp>>,
+}
+
+impl Button {
+    /// Returns `true` if the button is pressed
+    pub fn is_pressed(&mut self) -> bool {
+        // NOTE this operations returns a `Result` but never returns the `Err` variant
+        self.inner.is_low().unwrap_or(false) // TODO is_high ?
+    }
+
 }
 
 impl ops::Deref for Timer {
@@ -363,6 +391,14 @@ pub fn init() -> Result<Board, Error> {
 
     defmt::debug!("I/O pins have been configured for digital output");
 
+    // buttons
+    let button1pin = pins.p0_11.degrade().into_pullup_input();
+    let button2pin = pins.p0_12.degrade().into_pullup_input();
+    let button3pin = pins.p0_24.degrade().into_pullup_input();
+    let button4pin = pins.p0_25.degrade().into_pullup_input();
+
+    defmt::debug!("I/O pins have been configured for digital input (buttons)");
+
     let timer = hal::Timer::new(periph.TIMER0);
 
     #[cfg(feature = "radio")]
@@ -390,6 +426,12 @@ pub fn init() -> Result<Board, Error> {
             _2: Led { inner: led2pin },
             _3: Led { inner: led3pin },
             _4: Led { inner: led4pin },
+        },
+        buttons: Buttons {
+            _1: Button { inner: button1pin },
+            _2: Button { inner: button2pin },
+            _3: Button { inner: button3pin },
+            _4: Button { inner: button4pin },
         },
         #[cfg(feature = "radio")]
         radio,
