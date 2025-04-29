@@ -11,3 +11,4 @@ html/
 mdbook
 mdbook-mermaid
 *.backup
+.idea/

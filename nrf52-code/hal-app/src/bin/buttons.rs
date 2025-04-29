@@ -7,6 +7,8 @@ use cortex_m_rt::entry;
 // this imports `src/lib.rs`to retrieve our global logger + panicking-behavior
 use hal_app as _;
 
+const POLL_INTERVAL: Duration = Duration::from_millis(1000);
+
 #[entry]
 fn main() -> ! {
     let board = dk::init().unwrap();
@@ -15,17 +17,18 @@ fn main() -> ! {
     let mut timer = board.timer;
     // Uncomment the line below
     // 👇
-    // let mut button = board.buttons._1;
 
-    defmt::println!("Polling button every 100ms");
+    let ms = POLL_INTERVAL.as_millis();
+    defmt::println!("Polling button every {}ms", ms);
     loop {
-        // Replace `true` with `button.is_pressed()`
         // 👇
         if true {
             led.on();
+            timer.wait(POLL_INTERVAL);
+            led.off();
         } else {
             led.off();
         }
-        timer.wait(Duration::from_millis(100));
+        timer.wait(POLL_INTERVAL);
     }
 }
