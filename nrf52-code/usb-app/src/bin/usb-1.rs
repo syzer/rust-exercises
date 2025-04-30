@@ -45,9 +45,16 @@ mod app {
         defmt::debug!("USB: {} @ {=u64:tus}", event, dk::uptime_us());
 
         match event {
-            Event::UsbReset => todo!(),
-            Event::UsbEp0Setup => todo!(),
-            Event::UsbEp0DataDone => todo!(),
+            Event::UsbReset => {
+                defmt::println!("returning to the Default state");
+            },
+            Event::UsbEp0Setup => {
+                defmt::println!("usb-1 exercise complete");
+                dk::exit();
+            },
+            Event::UsbEp0DataDone => {
+                defmt::println!("usb-1 exercise complete");
+            }
         }
     }
 }
